@@ -196,7 +196,6 @@ class CTxIn(ImmutableSerializable):
         if not (0 <= nSequence <= 0xffffffff):
             raise ValueError('CTxIn: nSequence must be an integer between 0x0 and 0xffffffff; got %x' % nSequence)
         object.__setattr__(self, 'nSequence', nSequence)
-
         object.__setattr__(self, 'prevout', prevout)
         object.__setattr__(self, 'scriptSig', scriptSig)
 

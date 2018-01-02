@@ -131,7 +131,7 @@ def _CastToBool(s):
     return False
 
 
-def _CheckSig(sig, pubkey, script, txTo, inIdx, err_raiser):
+def _CheckSig(sig, pubkey, subscript, txTo, inIdx, err_raiser):
     key = bitcoin.core.key.CECKey()
     key.set_pubkey(pubkey)
 
@@ -148,7 +148,7 @@ def _CheckSig(sig, pubkey, script, txTo, inIdx, err_raiser):
     # imply the scriptSig being checked doesn't correspond to a valid txout -
     # that should cause other validation machinery to fail long before we ever
     # got here.
-    (h, err) = RawSignatureHash(script, txTo, inIdx, hashtype)
+    (h, err) = RawSignatureHash(subscript, txTo, inIdx, hashtype)
     return key.verify(h, sig)
 
 

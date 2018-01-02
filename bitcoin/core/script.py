@@ -677,6 +677,21 @@ class CScript(bytes):
                 _bord(self[1]) == 0x14 and
                 _bord(self[22]) == OP_EQUAL)
 
+    def is_p2pk(self):
+        """Test if the script is a Pay-to-Pubkey.
+
+        Note that this kind of scripts have been deprecated in favor of p2pkh."""
+        return (len(self) == 67 and
+                self[66] == OP_CHECKSIG)
+
+    def is_p2pkh(self):
+        """Test if the script is a Pay-to-PubkeyHash."""
+        return (len(self) == 25 and
+                self[0] == OP_DUP and
+                self[1] == OP_HASH160 and
+                self[23] == OP_EQUALVERIFY and
+                self[24] == OP_CHECKSIG)
+
     def is_witness_scriptpubkey(self):
         """Returns true if this is a scriptpubkey signaling segregated witness
         data. """
@@ -910,8 +925,18 @@ def CompareBigEndian(c1, c2):
     return 0
 
 
-def RawSignatureHash(script, txTo, inIdx, hashtype):
+def RawSignatureHash(subscript, txTo, inIdx, hashtype):
     """Consensus-correct SignatureHash
+
+    Args:
+        subscript: subscript of scriptPubKey of prev CTxOut
+        txTo: CTransaction to be signed
+        inIdx: which input is being signed
+        hashtype: what part of tx is hashed and signed
+
+    Hash is made from a modified transaction:
+      - all inputs are cleared, except for `inIdx`
+      - outputs may be cleared depending on `hashtype`
 
     Returns (hash, err) to precisely match the consensus-critical behavior of
     the SIGHASH_SINGLE bug. (inIdx is *not* checked for validity)
@@ -927,7 +952,7 @@ def RawSignatureHash(script, txTo, inIdx, hashtype):
 
     for txin in txtmp.vin:
         txin.scriptSig = b''
-    txtmp.vin[inIdx].scriptSig = FindAndDelete(script, CScript([OP_CODESEPARATOR]))
+    txtmp.vin[inIdx].scriptSig = FindAndDelete(subscript, CScript([OP_CODESEPARATOR]))
 
     if (hashtype & 0x1f) == SIGHASH_NONE:
         txtmp.vout = []
