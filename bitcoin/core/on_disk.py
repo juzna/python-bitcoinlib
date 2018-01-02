@@ -50,13 +50,13 @@ class BlockChain(object):
             # Most of the time, each block immediately follows the previous one. Sometimes,
             # however, there can be a gap, probably when bitcoind crashes.
             magic = None
-            while magic is None or magic == b'\x00\x00\x00\x00':
+            while magic is None or int.from_bytes(magic, 'big') == 0:
                 magic = f.read(4)
                 if magic == b"":  # nothing read, end of file
                     return
 
-            assert magic == bitcoin.params.MESSAGE_START, 'expected=%x, got=%x' % (
-                int.from_bytes(bitcoin.params.MESSAGE_START, 'big'), int.from_bytes(magic, 'big'))
+            assert magic == bitcoin.params.MESSAGE_START, 'expected=%s, got=%s' % (
+                bitcoin.core.b2x(bitcoin.params.MESSAGE_START, 'big'), bitcoin.core.b2x(magic, 'big'))
             size, = struct.unpack("<I", f.read(4))
 
             pos = f.tell()
